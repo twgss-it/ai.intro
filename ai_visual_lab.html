@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Visual Lab: Computer Vision & ML Pipeline</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    @keyframes scan-glow {
+      0% { top: 2%; opacity: 0.85; }
+      50% { opacity: 0.35; }
+      100% { top: 96%; opacity: 0.85; }
+    }
+    .laser-scanner {
+      animation: scan-glow 2.4s ease-in-out infinite alternate;
+    }
+
+    .pixel-cell {
+      transition: all 0.15s ease-out;
+    }
+    .pixel-cell:hover {
+      transform: scale(1.18);
+      z-index: 20;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+  <header class="h-16 border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-50 px-4 md:px-8 flex items-center justify-between shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-md shadow-sky-500/20">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M3 12h3m12 0h3M12 3v3m0 12v3"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-sm md:text-base font-bold text-slate-900 tracking-tight">AI Visual Lab</h1>
+        <p class="text-[11px] text-slate-500 font-medium">Interactive Visual Experiments in Computer Vision & Machine Learning</p>
+      </div>
+    </div>
+
+    <!-- Lab Switcher Tabs -->
+    <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+      <button id="nav-exp-1" onclick="switchLab(1)" class="px-3.5 md:px-5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all bg-sky-600 text-white shadow-sm flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        <span>Experiment 1: Vision Pipeline</span>
+      </button>
+      <button id="nav-exp-2" onclick="switchLab(2)" class="px-3.5 md:px-5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>Experiment 2: ML Pipeline</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col gap-4">
+
+    <section id="lab-section-1" class="flex-1 flex flex-col gap-4">
+      
+      <!-- Step Header Card -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span id="v-pill-stage" class="px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold bg-sky-100 text-sky-700 border border-sky-200">
+              Step 1 of 5
+            </span>
+            <span id="v-pill-sub" class="text-xs text-slate-500 font-mono">Sub-step 1/8</span>
+          </div>
+          <!-- Clean Action Title -->
+          <h2 id="v-main-title" class="text-lg md:text-2xl font-bold text-slate-900 mt-1.5">
+            The Raw Image
+          </h2>
+          <p id="v-sub-desc" class="text-xs md:text-sm text-slate-600 mt-1">
+            Camera captures light as a digital file (e.g., an apple on a table).
+          </p>
+        </div>
+
+        <!-- Navigation Stepper Buttons -->
+        <div class="flex items-center gap-2 self-end md:self-center">
+          <button id="v-btn-prev" onclick="moveVisionStep(-1)" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <span>Previous</span>
+          </button>
+          
+          <div id="v-step-dots" class="flex items-center gap-1.5 px-1"></div>
+
+          <button id="v-btn-next" onclick="moveVisionStep(1)" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-sm">
+            <span>Next Step</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Visual Work Area -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+        
+        <!-- Center Viewport Frame -->
+        <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 p-5 flex flex-col items-center justify-between relative shadow-sm min-h-[460px]">
+          
+          <div id="v-viewport" class="relative w-[340px] h-[340px] md:w-[380px] md:h-[380px] rounded-2xl bg-slate-100/80 border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+            <div id="v-render-target" class="w-full h-full relative flex items-center justify-center select-none"></div>
+            <!-- Laser scan overlay -->
+            <div id="v-laser-line" class="laser-scanner absolute left-0 right-0 h-0.5 bg-sky-500 shadow-[0_0_8px_#0ea5e9] hidden pointer-events-none"></div>
+          </div>
+
+          <!-- Bottom Metric Readout -->
+          <div class="w-full mt-4 bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs font-mono">
+            <span id="v-metric-tag" class="text-sky-700 font-bold">Optical light energy detected</span>
+            <span id="v-formula-tag" class="text-slate-500">I(x, y) = Photons(R, G, B)</span>
+          </div>
+        </div>
+
+        <!-- Side Inspector Panel -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+          
+          <!-- Pixel Probe Box -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-3 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <span class="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">Pixel Probe</span>
+              <span id="v-probe-mode" class="text-xs font-mono font-bold text-sky-600">Active Sensor</span>
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200 flex flex-col gap-2 font-mono">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500">Coordinate:</span>
+                <span id="v-probe-coord" class="text-slate-900 font-bold">X: 8, Y: 8</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-500">Identified Region:</span>
+                <span id="v-probe-part" class="text-sky-700 font-bold">Apple Body</span>
+              </div>
+              
+              <!-- Red Channel -->
+              <div class="flex justify-between items-center text-xs mt-1">
+                <span class="text-rose-600 font-bold">Red (R):</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div id="v-bar-r" class="bg-rose-500 h-full w-[86%] transition-all"></div>
+                  </div>
+                  <span id="v-val-r" class="text-slate-800 font-bold w-7 text-right">220</span>
+                </div>
+              </div>
+
+              <!-- Green Channel -->
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-emerald-600 font-bold">Green (G):</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div id="v-bar-g" class="bg-emerald-500 h-full w-[12%] transition-all"></div>
+                  </div>
+                  <span id="v-val-g" class="text-slate-800 font-bold w-7 text-right">30</span>
+                </div>
+              </div>
+
+              <!-- Blue Channel -->
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-sky-600 font-bold">Blue (B):</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div id="v-bar-b" class="bg-sky-500 h-full w-[14%] transition-all"></div>
+                  </div>
+                  <span id="v-val-b" class="text-slate-800 font-bold w-7 text-right">35</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-500 leading-relaxed">
+              Hover over matrix cells in Steps 2A/2B to probe exact numeric RGB intensities (0 to 255) for fruit, stem, leaf, and background.
+            </p>
+          </div>
+
+          <!-- Quick Jump Steps -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 flex-1 flex flex-col justify-between shadow-sm">
+            <span class="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider mb-2">Jump to Major Stage</span>
+
+            <div class="grid grid-cols-1 gap-1.5">
+              <button onclick="jumpVisionStep(0)" id="pill-step-1" class="text-left px-3 py-2 rounded-xl border border-sky-200 bg-sky-50/70 transition flex items-center justify-between">
+                <span class="text-xs font-bold text-sky-800">1. The Raw Image</span>
+                <span class="text-[11px] font-mono text-sky-600 font-semibold">Light</span>
+              </button>
+              <button onclick="jumpVisionStep(1)" id="pill-step-2" class="text-left px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">2. Pixels & Numbers</span>
+                <span class="text-[11px] font-mono text-slate-500">0 – 255</span>
+              </button>
+              <button onclick="jumpVisionStep(3)" id="pill-step-3" class="text-left px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">3. Finding Edges</span>
+                <span class="text-[11px] font-mono text-slate-500">Number jumps</span>
+              </button>
+              <button onclick="jumpVisionStep(5)" id="pill-step-4" class="text-left px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">4. Detecting Shapes</span>
+                <span class="text-[11px] font-mono text-slate-500">Geometry</span>
+              </button>
+              <button onclick="jumpVisionStep(7)" id="pill-step-5" class="text-left px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">5. Final AI Recognition</span>
+                <span class="text-[11px] font-mono text-slate-500">Apple 97%</span>
+              </button>
+            </div>
+
+            <div class="text-[11px] text-slate-400 text-center font-medium mt-3">
+              Hierarchical Vision Pipeline
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="lab-section-2" class="flex-1 flex flex-col gap-4 hidden">
+      
+      <!-- Prerequisite Knowledge Banner -->
+      <div class="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-200 flex items-center justify-center shrink-0">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-indigo-700 font-bold">Prerequisite Knowledge</span>
+            <span class="text-xs font-bold text-slate-700">What is a "Label"?</span>
+          </div>
+          <p class="text-xs md:text-sm text-indigo-900 mt-0.5">
+            A <strong>label</strong> is a human-assigned "answer tag" on training data (e.g., naming Folder 1 "Apple" and Folder 2 "Banana"). Without labels, the computer only sees numbers with no target to learn!
+          </p>
+        </div>
+      </div>
+
+      <!-- 4 Core Stages Header Tab Selectors -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <button onclick="selectMLStage(1)" id="ml-nav-1" class="p-3.5 rounded-xl border border-sky-400 bg-white text-left transition flex flex-col gap-1 shadow-sm">
+          <span class="text-[11px] font-mono font-bold text-sky-600">Step 1</span>
+          <span class="text-xs md:text-sm font-bold text-slate-900">Data Collection & Labeling</span>
+        </button>
+        <button onclick="selectMLStage(2)" id="ml-nav-2" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-white text-left transition flex flex-col gap-1">
+          <span class="text-[11px] font-mono font-bold text-slate-500">Step 2</span>
+          <span class="text-xs md:text-sm font-bold text-slate-600">Model Training</span>
+        </button>
+        <button onclick="selectMLStage(3)" id="ml-nav-3" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-white text-left transition flex flex-col gap-1">
+          <span class="text-[11px] font-mono font-bold text-slate-500">Step 3</span>
+          <span class="text-xs md:text-sm font-bold text-slate-600">Model Testing (Unseen Images)</span>
+        </button>
+        <button onclick="selectMLStage(4)" id="ml-nav-4" class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-white text-left transition flex flex-col gap-1">
+          <span class="text-[11px] font-mono font-bold text-slate-500">Step 4</span>
+          <span class="text-xs md:text-sm font-bold text-slate-600">Deployment & Troubleshooting</span>
+        </button>
+      </div>
+
+      <!-- Stage Container -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 md:p-6 min-h-[480px] flex flex-col justify-between shadow-sm">
+        
+        <!-- STAGE 1: DATA COLLECTION & LABELING -->
+        <div id="ml-panel-1" class="flex-1 flex flex-col gap-4">
+          <div class="border-b border-slate-100 pb-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-mono text-sky-700 font-bold uppercase tracking-wider">Step 1: Data Collection & Labeling</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-900 mt-0.5">
+                Sorting raw unlabeled photos into labeled folders
+              </h2>
+            </div>
+            <div class="px-3 py-1 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700">
+              Labeled Samples: <span id="label-progress-text" class="text-sky-600 font-bold">0</span> / 6
+            </div>
+          </div>
+
+          <!-- Interactive Sorting Interface -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 items-stretch">
+            
+            <!-- Incoming Unlabeled Sample -->
+            <div class="md:col-span-4 bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col items-center justify-between shadow-inner">
+              <span class="text-xs font-mono text-slate-500 font-semibold">Raw Unlabeled Matrix</span>
+
+              <div id="unlabeled-fruit-box" class="w-36 h-36 rounded-xl border-2 border-dashed border-sky-400/60 bg-white flex flex-col items-center justify-center p-2 relative shadow-sm">
+                <svg id="unlabeled-fruit-svg" class="w-24 h-24" viewBox="0 0 100 100"></svg>
+                <span id="unlabeled-fruit-code" class="text-[11px] font-mono text-slate-500 mt-1">[220, 30, 35]</span>
+              </div>
+
+              <!-- Tag Buttons -->
+              <div class="w-full grid grid-cols-2 gap-2 mt-2">
+                <button onclick="applyHumanLabel('apple')" class="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path></svg>
+                  <span>Tag "Apple"</span>
+                </button>
+                <button onclick="applyHumanLabel('banana')" class="py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path></svg>
+                  <span>Tag "Banana"</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Folder A: Labeled Apple -->
+            <div class="md:col-span-4 bg-rose-50/70 border border-rose-200 rounded-xl p-4 flex flex-col shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  <span class="text-xs font-bold text-rose-700 font-mono">Folder 1: "Apple"</span>
+                </div>
+                <span id="count-apple-folder" class="text-xs font-mono bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">0</span>
+              </div>
+              <div id="grid-apple-folder" class="flex-1 grid grid-cols-3 gap-2 p-2 bg-white/80 rounded-lg min-h-[140px] content-start border border-rose-100"></div>
+              <span class="text-[11px] text-rose-800/80 mt-2 font-medium">Why it matters: AI has zero common sense. The quality and variety of these samples form the sole foundation of its intelligence.</span>
+            </div>
+
+            <!-- Folder B: Labeled Banana -->
+            <div class="md:col-span-4 bg-amber-50/70 border border-amber-200 rounded-xl p-4 flex flex-col shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  <span class="text-xs font-bold text-amber-800 font-mono">Folder 2: "Banana"</span>
+                </div>
+                <span id="count-banana-folder" class="text-xs font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">0</span>
+              </div>
+              <div id="grid-banana-folder" class="flex-1 grid grid-cols-3 gap-2 p-2 bg-white/80 rounded-lg min-h-[140px] content-start border border-amber-100"></div>
+              <span class="text-[11px] text-amber-800/80 mt-2 font-medium">Why it matters: Labeled folders provide the ground truth target required for the model to optimize its weights.</span>
+            </div>
+
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <button id="btn-to-stage-2" onclick="selectMLStage(2)" disabled class="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-200 text-slate-400 cursor-not-allowed transition flex items-center gap-2">
+              <span>Proceed to Step 2: Model Training</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STAGE 2: MODEL TRAINING & WEIGHT OPTIMIZATION -->
+        <div id="ml-panel-2" class="flex-1 flex flex-col gap-4 hidden">
+          <div class="border-b border-slate-100 pb-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-mono text-indigo-700 font-bold uppercase tracking-wider">Step 2: Model Training</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-900 mt-0.5">
+                Running optimization algorithms across epochs
+              </h2>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btn-start-epochs" onclick="triggerEpochTraining()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Run 30 Epochs</span>
+              </button>
+              <button onclick="resetEpochTraining()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 flex-1 items-center">
+            
+            <!-- Scatter Canvas with Decision Boundary -->
+            <div class="md:col-span-7 bg-slate-50 rounded-xl p-3 border border-slate-200 flex flex-col items-center">
+              <div class="w-full flex justify-between text-xs font-mono text-slate-600 mb-1 px-1">
+                <span>Scatter: Curvature vs. Red Intensity</span>
+                <span id="epoch-status-text" class="text-indigo-600 font-bold">Epoch: 0 / 30</span>
+              </div>
+              <div class="relative w-full aspect-square max-h-[300px]">
+                <canvas id="canvas-scatter" width="380" height="380" class="w-full h-full rounded-lg bg-white shadow-inner"></canvas>
+              </div>
+              <div class="w-full flex justify-between text-[11px] font-mono text-slate-600 mt-2 px-1">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Apple Data</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Banana Data</span>
+                <span class="text-sky-600 font-bold">── Decision Boundary</span>
+              </div>
+            </div>
+
+            <!-- Loss Curve & Formula Calculation -->
+            <div class="md:col-span-5 flex flex-col gap-4">
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col gap-2">
+                <div class="flex justify-between items-center text-xs font-mono">
+                  <span class="text-slate-600">Optimization Error (Loss):</span>
+                  <span id="loss-numeric" class="text-rose-600 font-bold">0.94</span>
+                </div>
+                <div class="w-full h-24 rounded bg-white relative border border-slate-200 shadow-inner">
+                  <canvas id="canvas-loss" width="280" height="96" class="w-full h-full"></canvas>
+                </div>
+                <div class="flex justify-between text-[10px] font-mono text-slate-500">
+                  <span>Epoch 0 (High Error)</span>
+                  <span>Epoch 30 (Converged)</span>
+                </div>
+              </div>
+
+              <!-- Mathematical Weights Formula -->
+              <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 font-mono text-xs text-indigo-900 flex flex-col gap-1">
+                <span class="text-[10px] uppercase text-indigo-700 font-bold">Calculated Saved Formula:</span>
+                <div id="weights-formula-text" class="font-bold text-slate-900 text-sm">f(x) = W₁·Curvature + W₂·Color + b</div>
+                <span class="text-[11px] text-slate-600 mt-1 font-sans">Why it matters: It calculates mathematical weights separating Category A from B, condensing loose images into a saved formula.</span>
+              </div>
+
+              <div class="flex justify-end pt-1">
+                <button onclick="selectMLStage(3)" class="px-5 py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2 shadow-sm">
+                  <span>Proceed to Step 3: Unseen Testing</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- STAGE 3: MODEL TESTING (UNSEEN IMAGES) -->
+        <div id="ml-panel-3" class="flex-1 flex flex-col gap-4 hidden">
+          <div class="border-b border-slate-100 pb-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-mono text-emerald-700 font-bold uppercase tracking-wider">Step 3: Model Testing (Unseen Images)</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-900 mt-0.5">
+                Testing the model using photos it has never seen before
+              </h2>
+            </div>
+            <span class="text-xs font-mono px-3 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold">
+              Generalization vs. Memorization
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            <!-- Test Card 1: Green Apple -->
+            <div class="bg-slate-50 border border-slate-200 hover:border-emerald-500 rounded-xl p-4 flex flex-col items-center text-center transition shadow-sm">
+              <div class="w-20 h-20 flex items-center justify-center">
+                <svg class="w-16 h-16" viewBox="0 0 100 100">
+                  <path d="M50 20 Q55 10 65 8" stroke="#16a34a" stroke-width="4" fill="none" stroke-linecap="round"/>
+                  <path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#22c55e" stroke="#15803d" stroke-width="3"/>
+                </svg>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 mt-2">Unseen Green Apple</h4>
+              <span class="text-xs text-slate-500 mt-1">Different color, same circular outline.</span>
+              <button onclick="testUnseenSample('green_apple')" class="mt-4 w-full py-2 bg-white hover:bg-emerald-600 hover:text-white text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shadow-sm">
+                Test with Model
+              </button>
+            </div>
+
+            <!-- Test Card 2: Banana Bunch -->
+            <div class="bg-slate-50 border border-slate-200 hover:border-amber-500 rounded-xl p-4 flex flex-col items-center text-center transition shadow-sm">
+              <div class="w-20 h-20 flex items-center justify-center">
+                <svg class="w-16 h-16" viewBox="0 0 100 100">
+                  <path d="M20 75 Q45 85 75 55 Q85 40 88 20 Q80 25 70 40 Q45 65 20 75 Z" fill="#facc15" stroke="#ca8a04" stroke-width="3"/>
+                  <path d="M30 85 Q55 95 85 65 Q95 50 98 30 Q90 35 80 50 Q55 75 30 85 Z" fill="#eab308" stroke="#a16207" stroke-width="2" opacity="0.8"/>
+                </svg>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 mt-2">Unseen Banana Bunch</h4>
+              <span class="text-xs text-slate-500 mt-1">Grouped curved arcs.</span>
+              <button onclick="testUnseenSample('banana_bunch')" class="mt-4 w-full py-2 bg-white hover:bg-amber-500 hover:text-slate-950 text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shadow-sm">
+                Test with Model
+              </button>
+            </div>
+
+            <!-- Test Card 3: Memorized Sample -->
+            <div class="bg-slate-50 border border-slate-200 hover:border-indigo-500 rounded-xl p-4 flex flex-col items-center text-center transition shadow-sm">
+              <div class="w-20 h-20 flex items-center justify-center">
+                <svg class="w-16 h-16" viewBox="0 0 100 100">
+                  <path d="M50 20 Q55 10 65 8" stroke="#78350f" stroke-width="4" fill="none" stroke-linecap="round"/>
+                  <path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="3"/>
+                </svg>
+              </div>
+              <h4 class="font-bold text-sm text-slate-900 mt-2">Training Set Apple #1</h4>
+              <span class="text-xs text-slate-500 mt-1">Identical photo from training folder.</span>
+              <button onclick="testUnseenSample('memorized')" class="mt-4 w-full py-2 bg-white hover:bg-indigo-600 hover:text-white text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shadow-sm">
+                Test Memorized
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Evaluation Verdict Panel -->
+          <div id="unseen-verdict-box" class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+              <div id="unseen-icon-badge" class="w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center font-mono font-bold text-xs text-slate-600">
+                ?
+              </div>
+              <div>
+                <div id="unseen-verdict-title" class="text-xs font-mono uppercase text-slate-500 font-semibold">Select a card above to test</div>
+                <div id="unseen-verdict-body" class="text-sm font-bold text-slate-800">
+                  Why it matters: Testing with training photos only tests memorization! Unseen photos prove whether the AI can truly generalize to reality.
+                </div>
+              </div>
+            </div>
+            <div id="unseen-conf-badge" class="font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-200 text-slate-600">
+              Status: Ready
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="selectMLStage(4)" class="px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-2 shadow-sm">
+              <span>Proceed to Step 4: Deployment & Drift</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STAGE 4: DEPLOYMENT & TROUBLESHOOTING -->
+        <div id="ml-panel-4" class="flex-1 flex flex-col gap-4 hidden">
+          <div class="border-b border-slate-100 pb-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+            <div>
+              <span class="text-xs font-mono text-amber-700 font-bold uppercase tracking-wider">Step 4: Deployment & Troubleshooting</span>
+              <h2 class="text-lg md:text-xl font-bold text-slate-900 mt-0.5">
+                Exporting the model into an app and debugging mistakes by adding data
+              </h2>
+            </div>
+            <span class="text-xs font-mono px-3 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 font-semibold">
+              Checkout Scanner App v1.0
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 flex-1 items-center">
+            
+            <!-- Real-World Scanner Device Mockup -->
+            <div class="md:col-span-5 bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col items-center justify-between max-w-[280px] mx-auto w-full shadow-md relative">
+              <div class="w-full flex justify-between items-center text-[11px] font-mono text-slate-500 pb-2 border-b border-slate-200">
+                <span class="flex items-center gap-1.5 font-bold text-slate-700">
+                  <svg class="w-3.5 h-3.5 text-sky-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  Checkout Camera #02
+                </span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              </div>
+
+              <!-- Camera Viewport with Environmental Effects -->
+              <div id="deploy-view-frame" class="w-full aspect-square my-3 rounded-xl bg-white border border-slate-200 relative flex items-center justify-center overflow-hidden transition-all duration-300 shadow-inner">
+                <div id="deploy-svg-container" class="w-32 h-32 flex items-center justify-center transition-all duration-300"></div>
+                
+                <!-- Bounding Box -->
+                <div id="deploy-bound-box" class="absolute inset-4 border-2 border-emerald-500 rounded pointer-events-none transition-all"></div>
+                <div class="laser-scanner absolute left-0 right-0 h-0.5 bg-emerald-500 shadow-[0_0_6px_#10b981]"></div>
+              </div>
+
+              <!-- Classifier Output Readout -->
+              <div class="w-full bg-white rounded-xl p-3 border border-slate-200 flex flex-col gap-1 font-mono shadow-sm">
+                <span class="text-[10px] uppercase text-slate-500 font-bold">Real-time Inference:</span>
+                <div class="flex justify-between items-center">
+                  <span id="deploy-pred-label" class="font-bold text-sm text-emerald-600">Apple</span>
+                  <span id="deploy-pred-conf" class="text-xs text-slate-700 font-semibold">96% Confidence</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Environmental Shift Buttons & Continuous Retraining -->
+            <div class="md:col-span-7 flex flex-col gap-4">
+              <span class="text-xs font-mono text-slate-500 uppercase tracking-wider font-bold">Simulate Real-World Environmental Changes:</span>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="setDeploymentCondition('normal')" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition shadow-sm">
+                  <span class="text-xs font-bold text-slate-900 block">1. Ideal Studio Light</span>
+                  <span class="text-[11px] text-slate-500">Same as training set</span>
+                </button>
+                <button onclick="setDeploymentCondition('dim')" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition shadow-sm">
+                  <span class="text-xs font-bold text-slate-900 block">2. Dim Warehouse</span>
+                  <span class="text-[11px] text-slate-500">Pixel intensities drop &lt; 50</span>
+                </button>
+                <button onclick="setDeploymentCondition('occluded')" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition shadow-sm">
+                  <span class="text-xs font-bold text-slate-900 block">3. Hand Obstruction</span>
+                  <span class="text-[11px] text-slate-500">Customer finger blocks contour</span>
+                </button>
+                <button onclick="setDeploymentCondition('sliced')" class="p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-left transition shadow-sm">
+                  <span class="text-xs font-bold text-slate-900 block">4. Sliced Half Fruit</span>
+                  <span class="text-[11px] text-slate-500">Geometric outline altered</span>
+                </button>
+              </div>
+
+              <!-- Retrain / Patch Solution Box -->
+              <div id="deploy-troubleshoot-box" class="p-4 rounded-xl border border-amber-200 bg-amber-50/70 flex flex-col gap-2 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-amber-800 font-mono">Debugging & Active Monitoring</span>
+                  <span id="deploy-status-tag" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">
+                    Environmental Shift
+                  </span>
+                </div>
+                <p id="deploy-explain-text" class="text-xs text-amber-900 leading-relaxed">
+                  Why it matters: Real-world environments change; continuous tuning and monitoring prevent real-world failure.
+                </p>
+                <button id="btn-retrain-patch" onclick="applyRetrainingPatch()" class="mt-1 py-2 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                  <span>+ Add 50 diverse training photos & retrain weights</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* =========================================================================
+       EXPERIMENT 1: COMPUTER VISION STEP CONFIGURATIONS & LIGHT RENDERERS
+       ========================================================================= */
+    let currentLab = 1;
+    let vStepIndex = 0; // 0 to 7
+
+    const visionPipelineSteps = [
+      {
+        stageNum: "Step 1 of 5",
+        subNum: "Sub-step 1/8",
+        title: "The Raw Image",
+        desc: "Camera captures light as a digital file (e.g., an apple with leaf and stem on a table).",
+        metric: "Optical light energy detected",
+        formula: "I(x, y) = Raw Photons [Red Apple + Brown Stem + Green Leaf]",
+        render: renderLightCapture
+      },
+      {
+        stageNum: "Step 2 of 5",
+        subNum: "Sub-step 2/8",
+        title: "Pixels & Numbers: 16×16 Grid Discretization",
+        desc: "The entire image is divided into a 16×16 grid of 256 pixel cells, preserving stalk, leaf, and fruit.",
+        metric: "Resolution: 16×16 (256 Cells)",
+        formula: "Pixel Grid = Array[16 rows × 16 columns]",
+        render: renderPixelGrid
+      },
+      {
+        stageNum: "Step 2 of 5",
+        subNum: "Sub-step 3/8",
+        title: "Pixels & Numbers: Color Values (0–255)",
+        desc: "Each pixel stores Red, Green, and Blue numeric coordinates from 0 to 255.",
+        metric: "Intensity range: 0 to 255",
+        formula: "Pixel = (R: 0–255, G: 0–255, B: 0–255)",
+        render: renderNumbersGrid
+      },
+      {
+        stageNum: "Step 3 of 5",
+        subNum: "Sub-step 4/8",
+        title: "Finding Edges: Calculating Differences (Δ)",
+        desc: "Scans adjacent pixels for sharp number jumps (e.g., 20 → 220) marking physical outlines.",
+        metric: "Jump threshold: |Δ| > 90",
+        formula: "Δ = |Pixel[x, y] - Neighbor| > 90",
+        render: renderDeltaDifference
+      },
+      {
+        stageNum: "Step 3 of 5",
+        subNum: "Sub-step 5/8",
+        title: "Finding Edges: Tracing Outer Contours",
+        desc: "Sharp number jumps outline physical boundaries for the fruit contour, green leaf, and stem.",
+        metric: "Detected contours: 3 regions",
+        formula: "Contour = {Apple Contour, Leaf Boundary, Stem Line}",
+        render: renderEdgeTracing
+      },
+      {
+        stageNum: "Step 4 of 5",
+        subNum: "Sub-step 6/8",
+        title: "Detecting Shapes: Geometric Decomposition",
+        desc: "Edges assemble into geometry: circular curves, top indentation, stem lines, and leaf ellipse.",
+        metric: "Geometry extraction: 4 parts",
+        formula: "Geometry = {Arc(fruit), Indent(top), Line(stem), Ellipse(leaf)}",
+        render: renderGeometryDecomp
+      },
+      {
+        stageNum: "Step 4 of 5",
+        subNum: "Sub-step 7/8",
+        title: "Detecting Shapes: Pattern Feature Vector",
+        desc: "Extracted shapes and color weights combine into a compact numeric pattern vector.",
+        metric: "Feature vector: [Arc: 0.96, Red: 0.91, Stem: 0.88, Leaf: 0.85]",
+        formula: "X = [Circularity, ColorBalance, StemPresent, LeafPresent]",
+        render: renderFeatureAssembly
+      },
+      {
+        stageNum: "Step 5 of 5",
+        subNum: "Sub-step 8/8",
+        title: "Final AI Recognition",
+        desc: "Combines all detected shapes and color weights to confirm: Apple (97%).",
+        metric: "Final classification: Apple (97.4%)",
+        formula: "P(Apple|X) = Softmax(W·X + b) = 0.974",
+        render: renderFinalRecognition
+      }
+    ];
+
+    function getPixelType(r, c) {
+      // Stem: r = 1..4, c = 7, 8
+      if ((r === 1 && c === 8) ||
+          (r === 2 && (c === 7 || c === 8)) ||
+          (r === 3 && (c === 7 || c === 8)) ||
+          (r === 4 && (c === 7 || c === 8))) {
+        return { type: 'stem', rVal: 120, gVal: 53, bVal: 15, name: 'Brown Stem (Stalk)', color: '#b45309' };
+      }
+
+      // Leaf: pointed oval extending upper-right: r = 2..4, c = 9..12
+      if ((r === 2 && (c === 9 || c === 10)) ||
+          (r === 3 && (c === 9 || c === 10 || c === 11)) ||
+          (r === 4 && (c === 10 || c === 11 || c === 12))) {
+        return { type: 'leaf', rVal: 34, gVal: 197, bVal: 94, name: 'Green Leaf', color: '#16a34a' };
+      }
+
+      // Apple indentation at top: r = 5, c = 7, 8
+      if (r === 5 && (c === 7 || c === 8)) {
+        return { type: 'indent', rVal: 160, gVal: 20, bVal: 20, name: 'Top Indentation', color: '#be123c' };
+      }
+
+      // Apple Body: circle centered at (r=10, c=7.5), radius ~ 4.9
+      const dist = Math.hypot(c - 7.5, (r - 10) * 1.05);
+      if (r >= 5 && dist <= 5.0) {
+        return { type: 'apple', rVal: 220, gVal: 30, bVal: 35, name: 'Apple Body', color: '#e11d48' };
+      }
+
+      // Light background
+      return { type: 'bg', rVal: 241, gVal: 245, bVal: 249, name: 'Background (Table/Air)', color: '#e2e8f0' };
+    }
+
+    function renderLightCapture() {
+      const target = document.getElementById('v-render-target');
+      target.innerHTML = `
+        <svg viewBox="0 0 240 240" class="w-72 h-72">
+          <!-- Light shadow -->
+          <ellipse cx="120" cy="210" rx="75" ry="12" fill="#cbd5e1"/>
+          <!-- Green Leaf -->
+          <path d="M128 62 Q158 45 178 60 Q158 80 128 62 Z" fill="#22c55e" stroke="#16a34a" stroke-width="2.5"/>
+          <!-- Brown Stem -->
+          <path d="M120 75 Q122 42 132 26" stroke="#92400e" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <!-- Apple Body with gradient -->
+          <path d="M120 78 C75 72 45 105 50 152 C55 194 95 208 120 198 C145 208 185 194 190 152 C195 105 165 72 120 78 Z"
+                fill="url(#appleGradLightMode)" stroke="#be123c" stroke-width="3"/>
+          <defs>
+            <linearGradient id="appleGradLightMode" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fb7185"/>
+              <stop offset="50%" stop-color="#f43f5e"/>
+              <stop offset="100%" stop-color="#e11d48"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      `;
+      setProbeValues(8, 8, 220, 30, 35, "Apple Body");
+    }
+
+    function renderPixelGrid() {
+      const target = document.getElementById('v-render-target');
+      let html = `<div class="grid grid-cols-16 gap-[2px] p-2 bg-white rounded-xl border border-slate-200 shadow-sm" style="grid-template-columns: repeat(16, minmax(0, 1fr));">`;
+      for (let r = 0; r < 16; r++) {
+        for (let c = 0; c < 16; c++) {
+          const info = getPixelType(r, c);
+          html += `
+            <div class="pixel-cell w-[17px] h-[17px] rounded-[2px] border border-slate-300/70 cursor-pointer flex items-center justify-center"
+                 style="background-color: ${info.color};"
+                 onmouseenter="setProbeValues(${c}, ${r}, ${info.rVal}, ${info.gVal}, ${info.bVal}, '${info.name}')">
+            </div>
+          `;
+        }
+      }
+      html += `</div>`;
+      target.innerHTML = html;
+    }
+
+    function renderNumbersGrid() {
+      const target = document.getElementById('v-render-target');
+      let html = `<div class="grid grid-cols-16 gap-[2px] p-1.5 bg-white rounded-xl border border-slate-200 shadow-sm" style="grid-template-columns: repeat(16, minmax(0, 1fr));">`;
+      for (let r = 0; r < 16; r++) {
+        for (let c = 0; c < 16; c++) {
+          const info = getPixelType(r, c);
+          let primaryVal = info.rVal;
+          let textColor = "text-rose-700 font-bold";
+          let cellBg = "#ffe4e6";
+
+          if (info.type === 'leaf') {
+            primaryVal = info.gVal;
+            textColor = "text-emerald-800 font-bold";
+            cellBg = "#dcfce7";
+          } else if (info.type === 'stem') {
+            primaryVal = info.rVal;
+            textColor = "text-amber-800 font-bold";
+            cellBg = "#fef3c7";
+          } else if (info.type === 'bg') {
+            primaryVal = 20;
+            textColor = "text-slate-400";
+            cellBg = "#f8fafc";
+          }
+
+          html += `
+            <div class="pixel-cell w-[17px] h-[17px] rounded-[2px] border border-slate-200 cursor-pointer flex items-center justify-center font-mono text-[8px] ${textColor}"
+                 style="background-color: ${cellBg};"
+                 onmouseenter="setProbeValues(${c}, ${r}, ${info.rVal}, ${info.gVal}, ${info.bVal}, '${info.name}')">
+              ${primaryVal}
+            </div>
+          `;
+        }
+      }
+      html += `</div>`;
+      target.innerHTML = html;
+    }
+
+    function renderDeltaDifference() {
+      const target = document.getElementById('v-render-target');
+      target.innerHTML = `
+        <div class="flex flex-col items-center gap-3 w-full px-3">
+          <div class="grid grid-cols-3 gap-2.5 w-full font-mono text-xs">
+            <!-- Fruit jump -->
+            <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-center shadow-sm">
+              <span class="text-[10px] text-rose-700 block font-bold">Fruit Border</span>
+              <div class="text-rose-900 font-bold text-sm mt-0.5">220 vs 20</div>
+              <span class="text-sky-700 font-bold text-[11px] block mt-0.5">Δ = +200</span>
+            </div>
+            <!-- Leaf jump -->
+            <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-center shadow-sm">
+              <span class="text-[10px] text-emerald-700 block font-bold">Leaf Green (G)</span>
+              <div class="text-emerald-900 font-bold text-sm mt-0.5">197 vs 24</div>
+              <span class="text-sky-700 font-bold text-[11px] block mt-0.5">Δ = +173</span>
+            </div>
+            <!-- Stem jump -->
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-center shadow-sm">
+              <span class="text-[10px] text-amber-800 block font-bold">Stem Brown (R)</span>
+              <div class="text-amber-950 font-bold text-sm mt-0.5">120 vs 20</div>
+              <span class="text-sky-700 font-bold text-[11px] block mt-0.5">Δ = +100</span>
+            </div>
+          </div>
+          <div class="w-full text-center text-xs font-mono text-sky-800 bg-sky-50 p-2.5 rounded-xl border border-sky-200 font-medium">
+            Rule: When |Neighbor - Pixel| &gt; 90, sharp number jumps mark physical outlines!
+          </div>
+        </div>
+      `;
+      setProbeValues(10, 3, 34, 197, 94, "Green Leaf");
+    }
+
+    function renderEdgeTracing() {
+      const target = document.getElementById('v-render-target');
+      target.innerHTML = `
+        <svg viewBox="0 0 240 240" class="w-72 h-72">
+          <!-- Light grid backdrop -->
+          <pattern id="traceGridLight" width="15" height="15" patternUnits="userSpaceOnUse">
+            <path d="M 15 0 L 0 0 0 15" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+          </pattern>
+          <rect width="240" height="240" fill="url(#traceGridLight)" />
+          
+          <!-- Leaf Contour -->
+          <path d="M128 62 Q158 45 178 60 Q158 80 128 62 Z" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="4 2"/>
+          <!-- Stem Contour -->
+          <path d="M120 75 Q122 42 132 26" stroke="#b45309" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <!-- Apple Contour -->
+          <path d="M120 78 C75 72 45 105 50 152 C55 194 95 208 120 198 C145 208 185 194 190 152 C195 105 165 72 120 78 Z"
+                fill="none" stroke="#0284c7" stroke-width="3" stroke-dasharray="6 3"/>
+
+          <text x="145" y="44" fill="#16a34a" font-family="monospace" font-size="9" font-weight="bold">Leaf Contour</text>
+          <text x="75" y="32" fill="#b45309" font-family="monospace" font-size="9" font-weight="bold">Stem Edge</text>
+          <text x="145" y="215" fill="#0284c7" font-family="monospace" font-size="9" font-weight="bold">Apple Contour</text>
+        </svg>
+      `;
+    }
+
+    function renderGeometryDecomp() {
+      const target = document.getElementById('v-render-target');
+      target.innerHTML = `
+        <svg viewBox="0 0 240 240" class="w-72 h-72">
+          <!-- Circular Fruit Arc Fit -->
+          <circle cx="120" cy="148" r="56" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-dasharray="4 4"/>
+          <!-- Top Indent -->
+          <path d="M102 82 Q120 96 138 82" fill="none" stroke="#e11d48" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Vertical Stem Line -->
+          <line x1="120" y1="78" x2="132" y2="30" stroke="#b45309" stroke-width="5" stroke-linecap="round"/>
+          <!-- Leaf Oval -->
+          <ellipse cx="152" cy="62" rx="22" ry="9" transform="rotate(-15 152 62)" fill="none" stroke="#16a34a" stroke-width="3" stroke-dasharray="3 3"/>
+          
+          <text x="32" y="222" fill="#0284c7" font-family="monospace" font-size="9" font-weight="bold">1. Circular Fruit Curve</text>
+          <text x="142" y="98" fill="#e11d48" font-family="monospace" font-size="9" font-weight="bold">2. Top Indentation</text>
+          <text x="68" y="25" fill="#b45309" font-family="monospace" font-size="9" font-weight="bold">3. Stem Line</text>
+          <text x="165" y="55" fill="#16a34a" font-family="monospace" font-size="9" font-weight="bold">4. Leaf Ellipse</text>
+        </svg>
+      `;
+    }
+
+    function renderFeatureAssembly() {
+      const target = document.getElementById('v-render-target');
+      target.innerHTML = `
+        <div class="flex flex-col items-center gap-3">
+          <svg viewBox="0 0 200 150" class="w-60 h-36 bg-white rounded-xl border border-slate-200 p-2 shadow-sm">
+            <ellipse cx="100" cy="95" rx="46" ry="40" fill="rgba(244, 63, 94, 0.15)" stroke="#f43f5e" stroke-width="2"/>
+            <path d="M86 60 Q100 70 114 60" fill="none" stroke="#e11d48" stroke-width="2.5"/>
+            <line x1="100" y1="60" x2="108" y2="28" stroke="#b45309" stroke-width="3.5"/>
+            <ellipse cx="122" cy="45" rx="14" ry="6" transform="rotate(-15 122 45)" fill="rgba(34, 197, 94, 0.2)" stroke="#16a34a" stroke-width="2"/>
+          </svg>
+          <div class="grid grid-cols-4 gap-1.5 text-[10px] font-mono text-center w-full max-w-sm">
+            <div class="bg-white p-2 rounded-lg border border-slate-200 text-slate-800 font-bold shadow-sm">Arc: 0.96</div>
+            <div class="bg-white p-2 rounded-lg border border-slate-200 text-slate-800 font-bold shadow-sm">Stem: 0.88</div>
+            <div class="bg-white p-2 rounded-lg border border-slate-200 text-slate-800 font-bold shadow-sm">Leaf: 0.85</div>
+            <div class="bg-white p-2 rounded-lg border border-slate-200 text-slate-800 font-bold shadow-sm">Red: 0.91</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderFinalRecognition() {
+      const target = document.getElementById('v-render-target');
+      target.innerHTML = `
+        <div class="w-full max-w-xs bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span class="text-xs font-mono text-slate-500 font-semibold">Softmax Probabilities</span>
+            <span class="text-xs font-mono text-emerald-700 font-bold">Argmax(P)</span>
+          </div>
+
+          <!-- Apple Bar -->
+          <div class="flex flex-col gap-1 font-mono text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-900 font-bold">Apple (With leaf & stem)</span>
+              <span class="text-emerald-700 font-bold">97.4%</span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+              <div class="h-full bg-rose-500 rounded-full transition-all duration-700" style="width: 97.4%;"></div>
+            </div>
+          </div>
+
+          <!-- Banana Bar -->
+          <div class="flex flex-col gap-1 font-mono text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Banana</span>
+              <span class="text-slate-400">2.6%</span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+              <div class="h-full bg-amber-400 rounded-full transition-all duration-700" style="width: 2.6%;"></div>
+            </div>
+          </div>
+
+          <div class="mt-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-center font-mono text-xs text-emerald-800 font-bold">
+            Confirmed Classification: Apple (97%)
+          </div>
+        </div>
+      `;
+    }
+
+    function setProbeValues(x, y, r, g, b, partName = "Apple Body") {
+      document.getElementById('v-probe-coord').innerText = `X: ${x}, Y: ${y}`;
+      const partEl = document.getElementById('v-probe-part');
+      if (partEl) partEl.innerText = partName;
+      document.getElementById('v-val-r').innerText = r;
+      document.getElementById('v-val-g').innerText = g;
+      document.getElementById('v-val-b').innerText = b;
+
+      document.getElementById('v-bar-r').style.width = `${Math.min(100, (r / 255) * 100)}%`;
+      document.getElementById('v-bar-g').style.width = `${Math.min(100, (g / 255) * 100)}%`;
+      document.getElementById('v-bar-b').style.width = `${Math.min(100, (b / 255) * 100)}%`;
+    }
+
+    function switchLab(lab) {
+      currentLab = lab;
+      const s1 = document.getElementById('lab-section-1');
+      const s2 = document.getElementById('lab-section-2');
+      const nav1 = document.getElementById('nav-exp-1');
+      const nav2 = document.getElementById('nav-exp-2');
+
+      if (lab === 1) {
+        s1.classList.remove('hidden');
+        s2.classList.add('hidden');
+        nav1.className = "px-3.5 md:px-5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all bg-sky-600 text-white shadow-sm flex items-center gap-2";
+        nav2.className = "px-3.5 md:px-5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-2";
+        updateVisionUI();
+      } else {
+        s1.classList.add('hidden');
+        s2.classList.remove('hidden');
+        nav2.className = "px-3.5 md:px-5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all bg-sky-600 text-white shadow-sm flex items-center gap-2";
+        nav1.className = "px-3.5 md:px-5 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all text-slate-600 hover:text-slate-900 flex items-center gap-2";
+        selectMLStage(activeMLStage);
+      }
+    }
+
+    function updateVisionUI() {
+      const step = visionPipelineSteps[vStepIndex];
+      if (!step) return;
+
+      document.getElementById('v-pill-stage').innerText = step.stageNum;
+      document.getElementById('v-pill-sub').innerText = step.subNum;
+      document.getElementById('v-main-title').innerText = step.title;
+      document.getElementById('v-sub-desc').innerText = step.desc;
+      document.getElementById('v-metric-tag').innerText = step.metric;
+      document.getElementById('v-formula-tag').innerText = step.formula;
+
+      // Update dots indicator
+      const dotsContainer = document.getElementById('v-step-dots');
+      if (dotsContainer) {
+        dotsContainer.innerHTML = visionPipelineSteps.map((_, i) => `
+          <button onclick="jumpVisionStep(${i})" title="Go to sub-step ${i + 1}"
+                  class="${i === vStepIndex ? 'w-5 h-2 bg-sky-600 rounded-full' : 'w-2 h-2 bg-slate-300 hover:bg-slate-400 rounded-full'} transition-all duration-200">
+          </button>
+        `).join('');
+      }
+
+      // Prev / Next button states
+      const prevBtn = document.getElementById('v-btn-prev');
+      const nextBtn = document.getElementById('v-btn-next');
+      if (prevBtn) prevBtn.disabled = vStepIndex === 0;
+      if (nextBtn) {
+        nextBtn.disabled = vStepIndex === visionPipelineSteps.length - 1;
+        nextBtn.classList.toggle('opacity-40', vStepIndex === visionPipelineSteps.length - 1);
+        nextBtn.classList.toggle('cursor-not-allowed', vStepIndex === visionPipelineSteps.length - 1);
+      }
+
+      // Scanner laser display
+      const laser = document.getElementById('v-laser-line');
+      if (laser) {
+        if (vStepIndex === 3 || vStepIndex === 4) {
+          laser.classList.remove('hidden');
+        } else {
+          laser.classList.add('hidden');
+        }
+      }
+
+      // Jump pill states
+      const jumpStages = [
+        { el: 'pill-step-1', active: vStepIndex === 0 },
+        { el: 'pill-step-2', active: vStepIndex === 1 || vStepIndex === 2 },
+        { el: 'pill-step-3', active: vStepIndex === 3 || vStepIndex === 4 },
+        { el: 'pill-step-4', active: vStepIndex === 5 || vStepIndex === 6 },
+        { el: 'pill-step-5', active: vStepIndex === 7 }
+      ];
+      jumpStages.forEach(st => {
+        const btn = document.getElementById(st.el);
+        if (btn) {
+          if (st.active) {
+            btn.className = "text-left px-3 py-2 rounded-xl border border-sky-300 bg-sky-50 shadow-sm transition flex items-center justify-between";
+            btn.children[0].className = "text-xs font-bold text-sky-800";
+          } else {
+            btn.className = "text-left px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition flex items-center justify-between";
+            btn.children[0].className = "text-xs font-bold text-slate-700";
+          }
+        }
+      });
+
+      // Render step graphics
+      step.render();
+    }
+
+    function moveVisionStep(dir) {
+      const target = vStepIndex + dir;
+      if (target >= 0 && target < visionPipelineSteps.length) {
+        vStepIndex = target;
+        updateVisionUI();
+      }
+    }
+
+    function jumpVisionStep(idx) {
+      if (idx >= 0 && idx < visionPipelineSteps.length) {
+        vStepIndex = idx;
+        updateVisionUI();
+      }
+    }
+
+    /* =========================================================================
+       EXPERIMENT 2: 4-STAGE MACHINE LEARNING PIPELINE LOGIC
+       ========================================================================= */
+    let activeMLStage = 1;
+
+    const datasetSamples = [
+      { classType: 'apple', svg: `<path d="M50 20 Q55 10 65 8" stroke="#78350f" stroke-width="4" fill="none"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#ef4444"/>`, rgb: '[225, 28, 30]' },
+      { classType: 'banana', svg: `<path d="M25 70 Q50 85 75 55 Q85 40 88 20 Q80 25 70 40 Q45 65 25 70 Z" fill="#facc15"/>`, rgb: '[245, 210, 35]' },
+      { classType: 'apple', svg: `<path d="M50 20 Q55 10 65 8" stroke="#78350f" stroke-width="4" fill="none"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#b91c1c"/>`, rgb: '[185, 20, 25]' },
+      { classType: 'banana', svg: `<path d="M25 70 Q50 85 75 55 Q85 40 88 20 Q80 25 70 40 Q45 65 25 70 Z" fill="#eab308"/>`, rgb: '[235, 180, 20]' },
+      { classType: 'apple', svg: `<path d="M50 20 Q55 10 65 8" stroke="#15803d" stroke-width="4" fill="none"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#22c55e"/>`, rgb: '[34, 197, 94]' },
+      { classType: 'banana', svg: `<path d="M30 80 Q55 95 85 65 Q95 50 98 30 Q90 35 80 50 Q55 75 30 80 Z" fill="#fde047"/>`, rgb: '[250, 225, 60]' }
+    ];
+    let currentSampleIdx = 0;
+    let labeledCountTotal = 0;
+
+    function selectMLStage(stage) {
+      activeMLStage = stage;
+      for (let s = 1; s <= 4; s++) {
+        const panel = document.getElementById(`ml-panel-${s}`);
+        const nav = document.getElementById(`ml-nav-${s}`);
+        if (s === stage) {
+          panel.classList.remove('hidden');
+          nav.className = "p-3.5 rounded-xl border border-sky-500 bg-white text-left transition flex flex-col gap-1 shadow-sm";
+          nav.children[0].className = "text-[11px] font-mono font-bold text-sky-600";
+          nav.children[1].className = "text-xs md:text-sm font-bold text-slate-900";
+        } else {
+          panel.classList.add('hidden');
+          nav.className = "p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-white text-left transition flex flex-col gap-1";
+          nav.children[0].className = "text-[11px] font-mono font-bold text-slate-500";
+          nav.children[1].className = "text-xs md:text-sm font-bold text-slate-600";
+        }
+      }
+
+      if (stage === 1) renderActiveLabelSample();
+      if (stage === 2) initStage2Scatter();
+    }
+
+    function renderActiveLabelSample() {
+      if (currentSampleIdx >= datasetSamples.length) {
+        document.getElementById('unlabeled-fruit-box').innerHTML = `
+          <div class="text-center font-mono p-2">
+            <span class="text-xs font-bold text-emerald-700 block">Training Set Labeled</span>
+            <span class="text-[11px] text-slate-500 mt-1 block">6 Ground Truth Samples Ready</span>
+          </div>
+        `;
+        const proceedBtn = document.getElementById('btn-to-stage-2');
+        proceedBtn.disabled = false;
+        proceedBtn.className = "px-5 py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2 shadow-sm cursor-pointer";
+        return;
+      }
+
+      const item = datasetSamples[currentSampleIdx];
+      document.getElementById('unlabeled-fruit-svg').innerHTML = item.svg;
+      document.getElementById('unlabeled-fruit-code').innerText = item.rgb;
+    }
+
+    function applyHumanLabel(targetTag) {
+      if (currentSampleIdx >= datasetSamples.length) return;
+      const item = datasetSamples[currentSampleIdx];
+      labeledCountTotal++;
+
+      // Create miniature thumbnail inside folder
+      const folderGrid = document.getElementById(targetTag === 'apple' ? 'grid-apple-folder' : 'grid-banana-folder');
+      const thumb = document.createElement('div');
+      thumb.className = "w-10 h-10 p-1 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-sm";
+      thumb.innerHTML = `<svg viewBox="0 0 100 100" class="w-full h-full">${item.svg}</svg>`;
+      folderGrid.appendChild(thumb);
+
+      document.getElementById('label-progress-text').innerText = labeledCountTotal;
+      document.getElementById('count-apple-folder').innerText = document.getElementById('grid-apple-folder').children.length;
+      document.getElementById('count-banana-folder').innerText = document.getElementById('grid-banana-folder').children.length;
+
+      currentSampleIdx++;
+      renderActiveLabelSample();
+    }
+
+    let trainingTimer = null;
+    let epochCounter = 0;
+    let lossHistory = [0.94];
+
+    const scatterApples = [
+      { x: 260, y: 110 }, { x: 300, y: 150 }, { x: 330, y: 100 }, { x: 280, y: 190 }, { x: 320, y: 160 }, { x: 270, y: 140 }
+    ];
+    const scatterBananas = [
+      { x: 90, y: 280 }, { x: 120, y: 310 }, { x: 140, y: 250 }, { x: 180, y: 290 }, { x: 110, y: 220 }, { x: 150, y: 320 }
+    ];
+
+    function initStage2Scatter() {
+      drawScatterPlot(0);
+      drawLossPlot();
+    }
+
+    function drawScatterPlot(epoch) {
+      const canvas = document.getElementById('canvas-scatter');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Coordinate Grid Lines
+      ctx.strokeStyle = '#f1f5f9';
+      ctx.lineWidth = 1.5;
+      for (let i = 40; i < w; i += 40) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(w, i); ctx.stroke();
+      }
+
+      // Draw Apple Data Points
+      scatterApples.forEach(p => {
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // Draw Banana Data Points
+      scatterBananas.forEach(p => {
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // Rotating Separating Decision Line
+      const t = Math.min(1, epoch / 30);
+      const slope = 0.25 + (-1.35 - 0.25) * t;
+      const intercept = 120 + (470 - 120) * t;
+
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, intercept);
+      ctx.lineTo(380, slope * 380 + intercept);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      document.getElementById('weights-formula-text').innerText = 
+        `f(x) = (${slope.toFixed(2)})·Curvature + 0.85·Color + (${Math.round(intercept)})`;
+    }
+
+    function drawLossPlot() {
+      const canvas = document.getElementById('canvas-loss');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+
+      lossHistory.forEach((val, i) => {
+        const x = (i / 30) * (w - 20) + 10;
+        const y = h - (val * (h - 20) + 10);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    function triggerEpochTraining() {
+      if (trainingTimer) clearInterval(trainingTimer);
+      epochCounter = 0;
+      lossHistory = [0.94];
+
+      const btn = document.getElementById('btn-start-epochs');
+      btn.disabled = true;
+      btn.innerText = "Optimizing Weights...";
+
+      trainingTimer = setInterval(() => {
+        epochCounter++;
+        const currentLoss = 0.94 * Math.exp(-0.11 * epochCounter) + 0.05;
+        lossHistory.push(currentLoss);
+
+        document.getElementById('epoch-status-text').innerText = `Epoch: ${epochCounter} / 30`;
+        document.getElementById('loss-numeric').innerText = currentLoss.toFixed(2);
+
+        drawScatterPlot(epochCounter);
+        drawLossPlot();
+
+        if (epochCounter >= 30) {
+          clearInterval(trainingTimer);
+          btn.disabled = false;
+          btn.innerText = "Re-run 30 Epochs";
+          document.getElementById('loss-numeric').className = "text-emerald-700 font-bold";
+        }
+      }, 60);
+    }
+
+    function resetEpochTraining() {
+      if (trainingTimer) clearInterval(trainingTimer);
+      epochCounter = 0;
+      lossHistory = [0.94];
+      document.getElementById('epoch-status-text').innerText = `Epoch: 0 / 30`;
+      document.getElementById('loss-numeric').innerText = "0.94";
+      document.getElementById('loss-numeric').className = "text-rose-600 font-bold";
+      drawScatterPlot(0);
+      drawLossPlot();
+    }
+
+    function testUnseenSample(type) {
+      const icon = document.getElementById('unseen-icon-badge');
+      const title = document.getElementById('unseen-verdict-title');
+      const body = document.getElementById('unseen-verdict-body');
+      const badge = document.getElementById('unseen-conf-badge');
+
+      if (type === 'green_apple') {
+        icon.innerText = "✓";
+        icon.className = "w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center";
+        title.innerText = "Unseen Evaluation: Green Apple";
+        body.innerText = "Success! Even though the color shifted to green, circular curvature fell inside the Apple decision boundary. True generalization confirmed!";
+        badge.innerText = "Apple (92% Conf)";
+        badge.className = "font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300";
+      } else if (type === 'banana_bunch') {
+        icon.innerText = "✓";
+        icon.className = "w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center";
+        title.innerText = "Unseen Evaluation: Banana Bunch";
+        body.innerText = "Success! Multiple curved fruits were correctly grouped and matched to the elongated geometry formula.";
+        badge.innerText = "Banana (95% Conf)";
+        badge.className = "font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300";
+      } else if (type === 'memorized') {
+        icon.innerText = "!";
+        icon.className = "w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center";
+        title.innerText = "Training Set Evaluation: Memorized Sample";
+        body.innerText = "High score (99.8%), but caution: Testing with training data only tests memorization, not intelligence or generalization to reality!";
+        badge.innerText = "Apple (99.8% Memorized)";
+        badge.className = "font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-800 border border-indigo-300";
+      }
+    }
+
+    let currentCondition = 'normal';
+    let isModelRetrained = false;
+
+    function updateDeploymentGraphic() {
+      const container = document.getElementById('deploy-svg-container');
+      const frame = document.getElementById('deploy-view-frame');
+      const label = document.getElementById('deploy-pred-label');
+      const conf = document.getElementById('deploy-pred-conf');
+      const troubleshoot = document.getElementById('deploy-troubleshoot-box');
+
+      if (currentCondition === 'normal') {
+        frame.style.filter = "none";
+        container.innerHTML = `
+          <svg viewBox="0 0 100 100" class="w-24 h-24">
+            <path d="M50 20 Q55 10 65 8" stroke="#78350f" stroke-width="4" fill="none"/>
+            <path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#ef4444"/>
+          </svg>
+        `;
+        label.innerText = "Apple";
+        label.className = "font-bold text-sm text-emerald-600";
+        conf.innerText = "96% Confidence";
+        troubleshoot.classList.add('hidden');
+      } 
+      else if (currentCondition === 'dim') {
+        frame.style.filter = "brightness(0.4)";
+        container.innerHTML = `
+          <svg viewBox="0 0 100 100" class="w-24 h-24">
+            <path d="M25 70 Q50 85 75 55 Q85 40 88 20 Q80 25 70 40 Q45 65 25 70 Z" fill="#facc15"/>
+          </svg>
+        `;
+        if (!isModelRetrained) {
+          label.innerText = "Fail: Dim Noise";
+          label.className = "font-bold text-sm text-rose-600";
+          conf.innerText = "28% Confidence";
+          document.getElementById('deploy-explain-text').innerText = "Real-world failure: Warehouse is dark! Pixel values dropped below 50, which the studio-trained model never learned.";
+          troubleshoot.classList.remove('hidden');
+        } else {
+          label.innerText = "Banana (Patched)";
+          label.className = "font-bold text-sm text-emerald-600";
+          conf.innerText = "93% Confidence";
+          troubleshoot.classList.add('hidden');
+        }
+      } 
+      else if (currentCondition === 'occluded') {
+        frame.style.filter = "none";
+        container.innerHTML = `
+          <div class="relative w-24 h-24">
+            <svg viewBox="0 0 100 100" class="w-full h-full">
+              <path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#ef4444"/>
+            </svg>
+            <div class="absolute inset-y-4 right-1 w-10 bg-amber-200/90 rounded border border-amber-600/40"></div>
+          </div>
+        `;
+        if (!isModelRetrained) {
+          label.innerText = "Fail: Occlusion";
+          label.className = "font-bold text-sm text-rose-600";
+          conf.innerText = "39% Confidence";
+          document.getElementById('deploy-explain-text').innerText = "Real-world failure: Customer's hand blocks the contour edge jump! Geometry vector cannot close.";
+          troubleshoot.classList.remove('hidden');
+        } else {
+          label.innerText = "Apple (Patched)";
+          label.className = "font-bold text-sm text-emerald-600";
+          conf.innerText = "94% Confidence";
+          troubleshoot.classList.add('hidden');
+        }
+      } 
+      else if (currentCondition === 'sliced') {
+        frame.style.filter = "none";
+        container.innerHTML = `
+          <svg viewBox="0 0 100 100" class="w-24 h-24">
+            <path d="M20 50 A30 30 0 0 0 80 50 Z" fill="#fca5a5" stroke="#ef4444" stroke-width="2"/>
+          </svg>
+        `;
+        label.innerText = "Uncertain: Sliced";
+        label.className = "font-bold text-sm text-amber-600";
+        conf.innerText = "41% Confidence";
+        document.getElementById('deploy-explain-text').innerText = "Concept drift: Flat geometric half-circle does not match whole fruit training sets. Collect sliced fruit classes!";
+        troubleshoot.classList.remove('hidden');
+      }
+    }
+
+    function setDeploymentCondition(cond) {
+      currentCondition = cond;
+      updateDeploymentGraphic();
+    }
+
+    function applyRetrainingPatch() {
+      isModelRetrained = true;
+      document.getElementById('deploy-status-tag').innerText = "Retrained & Patched";
+      document.getElementById('deploy-status-tag').className = "text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold";
+      document.getElementById('deploy-explain-text').innerText = "Success: 50 dim and occluded samples integrated into training set. Model weights updated to handle real-world variations!";
+      document.getElementById('btn-retrain-patch').classList.add('hidden');
+      updateDeploymentGraphic();
+    }
+
+    // Window Onload Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      updateVisionUI();
+      renderActiveLabelSample();
+    });
+  </script>
+</body>
+</html>
