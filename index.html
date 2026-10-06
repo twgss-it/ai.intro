@@ -277,7 +277,7 @@
               </h2>
             </div>
             <div class="px-3 py-1 bg-slate-50 rounded-lg border border-slate-200 font-mono text-xs text-slate-700">
-              Labeled Samples: <span id="label-progress-text" class="text-sky-600 font-bold">0</span> / 6
+              Labeled Samples: <span id="label-progress-text" class="text-sky-600 font-bold">0</span> / 12
             </div>
           </div>
 
@@ -430,17 +430,18 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             
-            <!-- Test Card 1: Green Apple -->
-            <div class="bg-slate-50 border border-slate-200 hover:border-emerald-500 rounded-xl p-4 flex flex-col items-center text-center transition shadow-sm">
+            <!-- Test Card 1: Unseen Red Apple -->
+            <div class="bg-slate-50 border border-slate-200 hover:border-rose-500 rounded-xl p-4 flex flex-col items-center text-center transition shadow-sm">
               <div class="w-20 h-20 flex items-center justify-center">
                 <svg class="w-16 h-16" viewBox="0 0 100 100">
-                  <path d="M50 20 Q55 10 65 8" stroke="#16a34a" stroke-width="4" fill="none" stroke-linecap="round"/>
-                  <path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#22c55e" stroke="#15803d" stroke-width="3"/>
+                  <path d="M50 20 Q58 10 66 12" stroke="#78350f" stroke-width="4" fill="none" stroke-linecap="round"/>
+                  <path d="M56 16 Q68 12 76 18 Q68 28 56 16 Z" fill="#16a34a"/>
+                  <path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#e11d48" stroke="#be123c" stroke-width="3"/>
                 </svg>
               </div>
-              <h4 class="font-bold text-sm text-slate-900 mt-2">Unseen Green Apple</h4>
-              <span class="text-xs text-slate-500 mt-1">Different color, same circular outline.</span>
-              <button onclick="testUnseenSample('green_apple')" class="mt-4 w-full py-2 bg-white hover:bg-emerald-600 hover:text-white text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shadow-sm">
+              <h4 class="font-bold text-sm text-slate-900 mt-2">Unseen Red Apple</h4>
+              <span class="text-xs text-slate-500 mt-1">Different shade & angle, same circular outline.</span>
+              <button onclick="testUnseenSample('unseen_red')" class="mt-4 w-full py-2 bg-white hover:bg-rose-600 hover:text-white text-slate-800 font-bold text-xs rounded-xl border border-slate-200 transition shadow-sm">
                 Test with Model
               </button>
             </div>
@@ -1048,12 +1049,30 @@
     let activeMLStage = 1;
 
     const datasetSamples = [
-      { classType: 'apple', svg: `<path d="M50 20 Q55 10 65 8" stroke="#78350f" stroke-width="4" fill="none"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#ef4444"/>`, rgb: '[225, 28, 30]' },
+      // 1. Classic red apple with leaf
+      { classType: 'apple', svg: `<path d="M50 20 Q54 10 64 8" stroke="#78350f" stroke-width="4" fill="none"/><path d="M55 14 Q65 10 70 16 Q62 23 55 14 Z" fill="#16a34a"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#ef4444"/>`, rgb: '[225, 28, 30]' },
+      // 2. Classic crescent yellow banana
       { classType: 'banana', svg: `<path d="M25 70 Q50 85 75 55 Q85 40 88 20 Q80 25 70 40 Q45 65 25 70 Z" fill="#facc15"/>`, rgb: '[245, 210, 35]' },
-      { classType: 'apple', svg: `<path d="M50 20 Q55 10 65 8" stroke="#78350f" stroke-width="4" fill="none"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#b91c1c"/>`, rgb: '[185, 20, 25]' },
-      { classType: 'banana', svg: `<path d="M25 70 Q50 85 75 55 Q85 40 88 20 Q80 25 70 40 Q45 65 25 70 Z" fill="#eab308"/>`, rgb: '[235, 180, 20]' },
-      { classType: 'apple', svg: `<path d="M50 20 Q55 10 65 8" stroke="#15803d" stroke-width="4" fill="none"/><path d="M50 30 C30 25 15 45 20 70 C25 90 45 95 50 90 C55 95 75 90 80 70 C85 45 70 25 50 30 Z" fill="#22c55e"/>`, rgb: '[34, 197, 94]' },
-      { classType: 'banana', svg: `<path d="M30 80 Q55 95 85 65 Q95 50 98 30 Q90 35 80 50 Q55 75 30 80 Z" fill="#fde047"/>`, rgb: '[250, 225, 60]' }
+      // 3. Deep crimson red apple, upright stem
+      { classType: 'apple', svg: `<path d="M50 18 Q46 8 38 7" stroke="#78350f" stroke-width="4" fill="none"/><path d="M50 28 C28 24 16 48 20 74 C24 93 46 96 50 92 C54 96 76 93 80 74 C84 48 72 24 50 28 Z" fill="#b91c1c"/>`, rgb: '[185, 20, 25]' },
+      // 4. Golden ripe banana with dark stem tip
+      { classType: 'banana', svg: `<path d="M22 72 Q48 88 74 58 Q84 42 87 22 Q79 27 69 42 Q44 67 22 72 Z" fill="#eab308"/><path d="M84 26 L87 22 L83 22 Z" fill="#78350f"/>`, rgb: '[235, 180, 20]' },
+      // 5. Bright scarlet red apple, broader silhouette
+      { classType: 'apple', svg: `<path d="M52 22 Q58 12 66 10" stroke="#78350f" stroke-width="4.5" fill="none"/><path d="M52 30 C32 23 12 43 18 69 C24 92 46 95 52 90 C58 95 80 92 84 69 C90 43 72 23 52 30 Z" fill="#dc2626"/>`, rgb: '[220, 38, 38]' },
+      // 6. Pale lemon-yellow banana with high curvature
+      { classType: 'banana', svg: `<path d="M30 80 Q55 95 85 65 Q95 50 98 30 Q90 35 80 50 Q55 75 30 80 Z" fill="#fde047"/>`, rgb: '[250, 225, 60]' },
+      // 7. Ruby red apple with double green leaf
+      { classType: 'apple', svg: `<path d="M50 20 Q50 10 52 6" stroke="#78350f" stroke-width="4" fill="none"/><path d="M50 14 Q60 8 68 14 Q58 20 50 14 Z" fill="#22c55e"/><path d="M50 16 Q38 10 32 16 Q42 22 50 16 Z" fill="#16a34a"/><path d="M50 30 C30 26 18 46 22 70 C26 90 46 94 50 90 C54 94 74 90 78 70 C82 46 70 26 50 30 Z" fill="#e11d48"/>`, rgb: '[225, 29, 72]' },
+      // 8. Thicker amber-yellow banana with bottom tip
+      { classType: 'banana', svg: `<path d="M20 65 Q45 80 72 50 Q82 35 86 16 Q76 22 66 38 Q40 62 20 65 Z" fill="#fbbf24"/><path d="M19 66 L23 68 L21 63 Z" fill="#78350f"/>`, rgb: '[251, 191, 36]' },
+      // 9. Rose-red compact apple
+      { classType: 'apple', svg: `<path d="M50 22 Q56 12 62 10" stroke="#78350f" stroke-width="3.5" fill="none"/><path d="M50 32 C34 28 20 46 24 68 C28 88 46 92 50 88 C54 92 72 88 76 68 C80 46 66 28 50 32 Z" fill="#f43f5e"/>`, rgb: '[244, 63, 94]' },
+      // 10. Warm honey-yellow banana with long arc
+      { classType: 'banana', svg: `<path d="M26 76 Q52 90 78 60 Q88 45 90 26 Q82 31 72 46 Q48 70 26 76 Z" fill="#f59e0b"/>`, rgb: '[245, 158, 11]' },
+      // 11. Dark garnet red apple, stout shape
+      { classType: 'apple', svg: `<path d="M49 19 Q45 9 40 7" stroke="#78350f" stroke-width="4" fill="none"/><path d="M49 29 C27 25 14 47 18 72 C22 92 45 96 49 91 C53 96 76 92 80 72 C84 47 71 25 49 29 Z" fill="#991b1b"/>`, rgb: '[153, 27, 27]' },
+      // 12. Vibrant sunny yellow banana with stalk cap
+      { classType: 'banana', svg: `<path d="M28 78 Q54 92 82 62 Q92 47 94 28 Q86 33 76 48 Q50 72 28 78 Z" fill="#facc15"/><line x1="28" y1="78" x2="25" y2="81" stroke="#78350f" stroke-width="3" stroke-linecap="round"/>`, rgb: '[250, 204, 21]' }
     ];
     let currentSampleIdx = 0;
     let labeledCountTotal = 0;
@@ -1085,7 +1104,7 @@
         document.getElementById('unlabeled-fruit-box').innerHTML = `
           <div class="text-center font-mono p-2">
             <span class="text-xs font-bold text-emerald-700 block">Training Set Labeled</span>
-            <span class="text-[11px] text-slate-500 mt-1 block">6 Ground Truth Samples Ready</span>
+            <span class="text-[11px] text-slate-500 mt-1 block">12 Ground Truth Samples Ready</span>
           </div>
         `;
         const proceedBtn = document.getElementById('btn-to-stage-2');
@@ -1259,13 +1278,13 @@
       const body = document.getElementById('unseen-verdict-body');
       const badge = document.getElementById('unseen-conf-badge');
 
-      if (type === 'green_apple') {
+      if (type === 'unseen_red' || type === 'green_apple') {
         icon.innerText = "✓";
-        icon.className = "w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center";
-        title.innerText = "Unseen Evaluation: Green Apple";
-        body.innerText = "Success! Even though the color shifted to green, circular curvature fell inside the Apple decision boundary. True generalization confirmed!";
-        badge.innerText = "Apple (92% Conf)";
-        badge.className = "font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300";
+        icon.className = "w-8 h-8 rounded-lg bg-rose-100 text-rose-700 font-bold flex items-center justify-center";
+        title.innerText = "Unseen Evaluation: New Red Apple";
+        body.innerText = "Success! Even with a brand-new angle and deeper crimson hue, the circular outline and color fell inside the Apple decision boundary. True generalization confirmed!";
+        badge.innerText = "Apple (95% Conf)";
+        badge.className = "font-mono text-xs font-bold px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300";
       } else if (type === 'banana_bunch') {
         icon.innerText = "✓";
         icon.className = "w-8 h-8 rounded-lg bg-amber-100 text-amber-700 font-bold flex items-center justify-center";
